@@ -1,0 +1,15 @@
+{
+  "id": "steaming-pwa",
+  "name": "Streaming PWA",
+  "short_name": "StreamingPWA",
+  "description": "PWA for streaming",
+  "lang": "fr",
+  "icons": [],
+  "start_url": "/",
+  "dir": "auto",
+  "display": "fullscreen",
+  "theme_color": "#bbb",
+  "background_color": "#1c2431",
+  "orientation": "portrait-primary",
+  "categories": ["streaming", "movies", "series"]
+}

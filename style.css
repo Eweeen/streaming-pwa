@@ -1,0 +1,47 @@
+.card {
+    position: relative;
+    width: 300px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    img {
+        max-width: max-content;
+    }
+
+    .card-infos {
+        cursor: default;
+        h2 {
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #333;
+    border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background-color: #666;
+}
+
+@media (prefers-color-scheme: dark) {
+    *::-webkit-scrollbar-thumb {
+        background-color: #f1f1f1;
+        border-radius: 999px;
+    }
+    
+    *::-webkit-scrollbar-thumb:hover {
+        background-color: #b4b4b4;
+    }   
+}
