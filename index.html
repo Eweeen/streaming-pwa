@@ -12,6 +12,22 @@
           }/sw.js`
         );
       }
+
+      if ("serviceWorker" in navigator && "SyncManager" in window) {
+        navigator.serviceWorker.ready
+          .then(function (registration) {
+            return registration.sync.register("daily-sync");
+          })
+          .then(function () {
+            console.log("Synchronisation périodique enregistrée avec succès.");
+          })
+          .catch(function (err) {
+            console.error(
+              "Impossible d'enregistrer la synchronisation périodique:",
+              err
+            );
+          });
+      }
     </script>
     <title>Streaming PWA</title>
     <link rel="manifest" href="manifest.webmanifest" />

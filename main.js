@@ -42,9 +42,6 @@ window.addEventListener("load", () => {
   getPopularSeries();
   getFavoritesMovies();
   getFavoritesSeries();
-
-  nowPlaying();
-  airingToday();
 });
 
 /**
