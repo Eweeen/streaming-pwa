@@ -4,7 +4,24 @@
   "short_name": "StreamingPWA",
   "description": "PWA for streaming",
   "lang": "fr",
-  "icons": [],
+  "icons": [
+    {
+      "sizes": "150x150",
+      "src": "/icons/150x150.jpg"
+    },
+    {
+      "sizes": "192x192",
+      "src": "/icons/192x192.jpg"
+    },
+    {
+      "sizes": "360x360",
+      "src": "/icons/360x360.jpg"
+    },
+    {
+      "sizes": "512x512",
+      "src": "/icons/512x512.jpg"
+    }
+  ],
   "start_url": "/",
   "dir": "auto",
   "display": "fullscreen",

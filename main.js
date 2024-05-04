@@ -12,14 +12,22 @@ const data = { movies: [], series: [] };
 const dbVersion = 2;
 const dbName = "streaming";
 const storesNames = [
-  { name: "movies", index: ["title", "release_date", "poster_path"] },
-  { name: "series", index: ["name", "first_air_date", "poster_path"] },
+  {
+    name: "movies",
+    index: ["title", "release_date", "poster_path", "vote_average"],
+  },
+  {
+    name: "series",
+    index: ["name", "first_air_date", "poster_path", "vote_average"],
+  },
 ];
 const storeKeyPath = "id";
 
 // DOM
 const popularMovies = document.getElementById("popular-movies");
 const popularSeries = document.getElementById("popular-series");
+const favoritesMovies = document.getElementById("favorites-movies");
+const favoritesSeries = document.getElementById("favorites-series");
 
 // Utils
 const localeDateString = (date) =>
@@ -32,6 +40,8 @@ const localeDateString = (date) =>
 window.addEventListener("load", () => {
   getPopularMovies();
   getPopularSeries();
+  getFavoritesMovies();
+  getFavoritesSeries();
 
   nowPlaying();
   airingToday();
@@ -99,13 +109,19 @@ async function getAll(storeName) {
  * @param {string} release_date - The release date of the movie or serie
  * @param {string} poster_path - The poster path of the movie or serie
  */
-async function addMovie(id, title, release_date, poster_path) {
+async function addMovie(id, title, release_date, poster_path, vote_average) {
   const transaction = (await openDB()).transaction(["movies"], "readwrite");
 
   return new Promise((resolve, reject) => {
     transaction.onerror = reject;
     const store = transaction.objectStore("movies");
-    const req = store.add({ id, title, release_date, poster_path });
+    const req = store.add({
+      id,
+      title,
+      release_date,
+      poster_path,
+      vote_average,
+    });
 
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
@@ -121,13 +137,19 @@ async function addMovie(id, title, release_date, poster_path) {
  * @param {string} first_air_date - The first air date of the serie
  * @param {string} poster_path - The poster path of the serie
  */
-async function addSerie(id, name, first_air_date, poster_path) {
+async function addSerie(id, name, first_air_date, poster_path, vote_average) {
   const transaction = (await openDB()).transaction(["series"], "readwrite");
 
   return new Promise((resolve, reject) => {
     transaction.onerror = reject;
     const store = transaction.objectStore("series");
-    const req = store.add({ id, name, first_air_date, poster_path });
+    const req = store.add({
+      id,
+      name,
+      first_air_date,
+      poster_path,
+      vote_average,
+    });
 
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
@@ -182,13 +204,20 @@ function buildCard(
   card.dataset.id = id;
 
   const src = isFavorite ? "icons/heart-solid.svg" : "icons/heart-regular.svg";
+  const alt = isFavorite ? "Retirer des favoris" : "Ajouter aux favoris";
 
   card.innerHTML = `
-    <div data-id="${id}" class="favorite-${type} absolute top-2 right-2 cursor-pointer bg-black p-2 rounded-full">
-      <img src="${src}" alt="" class="w-6 h-6" />
+    <div data-id="${id}" class="favorite-${type} absolute z-10 top-2 right-2 cursor-pointer bg-black p-2 rounded-full">
+      <img src="${src}" alt="${alt}" class="w-6 h-6" />
     </div>
 
-    <img src="https://image.tmdb.org/t/p/w300${poster_path}" alt="${title}" />
+    <div class="poster relative flex-1">
+      <img src="https://image.tmdb.org/t/p/w300${poster_path}" alt="${title}" />
+
+      <div data-id="${id}" class="shared shared-${type} hidden absolute bottom-2 right-2 bg-black rounded-xl p-2" title="Partager sur Twitter">
+        <img src="icons/share-solid.svg" alt="Partager" class="w-5 h-5" />
+      </div>
+    </div>
 
     <div class="card-infos">
       <h2 title="${title}">${title}</h2>
@@ -210,6 +239,8 @@ function buildCard(
  * @returns {Promise} movies - The popular movies
  */
 async function getPopularMovies() {
+  if (!popularMovies) return;
+
   const movies = await fetch(
     `${URL}movie/popular?language=fr-FR&page=1`,
     options
@@ -247,6 +278,8 @@ async function getPopularMovies() {
  * @returns {Promise} series - The popular series
  */
 async function getPopularSeries() {
+  if (!popularSeries) return;
+
   const series = await fetch(`${URL}tv/popular?language=en-US&page=1`, options)
     .then((response) => response.json())
     .catch((err) => console.error(err));
@@ -269,6 +302,82 @@ async function getPopularSeries() {
       "serie"
     );
     popularSeries.appendChild(serie);
+  }
+
+  setEventListenerToFavorite("serie");
+}
+
+/**
+ * Get favorite movies
+ *
+ * @async
+ * @returns {Promise}
+ */
+async function getFavoritesMovies() {
+  if (!favoritesMovies) return;
+
+  const favoriteMovies = await getAll("movies");
+
+  favoritesMovies.innerHTML = "";
+  data.movies = favoriteMovies;
+
+  if (!favoriteMovies.length) {
+    const noFavorites = document.createElement("p");
+    noFavorites.textContent = "Aucun film favori";
+
+    favoritesMovies.appendChild(noFavorites);
+    return;
+  }
+
+  for (const m of favoriteMovies) {
+    const movie = buildCard(
+      m.id,
+      m.title,
+      m.release_date,
+      m.poster_path,
+      m.vote_average,
+      true,
+      "movie"
+    );
+    favoritesMovies.appendChild(movie);
+  }
+
+  setEventListenerToFavorite("movie");
+}
+
+/**
+ * Get favorite series
+ *
+ * @async
+ * @returns {Promise}
+ */
+async function getFavoritesSeries() {
+  if (!favoritesSeries) return;
+
+  const favoriteSeries = await getAll("series");
+
+  favoritesSeries.innerHTML = "";
+  data.series = favoriteSeries;
+
+  if (!favoriteSeries.length) {
+    const noFavorites = document.createElement("p");
+    noFavorites.textContent = "Aucune série favorite";
+
+    favoritesSeries.appendChild(noFavorites);
+    return;
+  }
+
+  for (const s of favoriteSeries) {
+    const serie = buildCard(
+      s.id,
+      s.name,
+      s.first_air_date,
+      s.poster_path,
+      s.vote_average,
+      true,
+      "serie"
+    );
+    favoritesSeries.appendChild(serie);
   }
 
   setEventListenerToFavorite("serie");
@@ -338,6 +447,12 @@ function setEventListenerToFavorite(type) {
   icons.forEach((el) => {
     el.addEventListener("click", handleFavoriteClick);
   });
+
+  // Add event listeners to the share icons.
+  const shared = document.querySelectorAll(`.shared-${type}`);
+  shared.forEach((el) => {
+    el.addEventListener("click", handleShareClick);
+  });
 }
 
 /**
@@ -370,12 +485,70 @@ function handleFavoriteClick(e) {
     const item = data[type].find((item) => item.id === id);
 
     if (type === "movies") {
-      addMovie(id, item.title, item.release_date, item.poster_path);
+      addMovie(
+        id,
+        item.title,
+        item.release_date,
+        item.poster_path,
+        item.vote_average
+      );
     } else {
-      addSerie(id, item.name, item.first_air_date, item.poster_path);
+      addSerie(
+        id,
+        item.name,
+        item.first_air_date,
+        item.poster_path,
+        item.vote_average
+      );
     }
   } else {
     child.src = "icons/heart-regular.svg";
     remove(type, id);
   }
+}
+
+/**
+ * Handle the share click event.
+ *
+ * @param {Event} e - The event object.
+ * @returns {void}
+ */
+function handleShareClick(e) {
+  let target = e.target;
+  let child;
+  e.preventDefault();
+
+  const isImg = e.target.tagName === "IMG";
+  if (isImg) {
+    target = e.target.parentElement;
+    child = e.target;
+  } else {
+    child = e.target.querySelector("img");
+  }
+
+  const id = +target.dataset.id;
+  const type =
+    target.classList[1].split("-")[1] === "movie" ? "movies" : "series";
+
+  const item = data[type].find((item) => item.id === id);
+
+  const url = `https://www.themoviedb.org/${type}/${id}`;
+  const text = `Découvrez ${item.title || item.name} sur The Movie Database`;
+
+  partagerSurTwitter(url, text);
+}
+
+/**
+ * Partager sur Twitter
+ *
+ * @param {string} url - L'URL à partager
+ * @param {string} texte - Le texte à partager
+ */
+function partagerSurTwitter(url, texte) {
+  // Créer l'URL de partage pour Twitter
+  var twitterShareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+    url
+  )}&text=${encodeURIComponent(texte)}`;
+  // Ouvrir une nouvelle fenêtre pour partager l'URL sur Twitter
+  window.open(twitterShareUrl, "_blank", "width=1000,height=700");
 }

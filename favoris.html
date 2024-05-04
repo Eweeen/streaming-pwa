@@ -13,7 +13,7 @@
         );
       }
     </script>
-    <title>Streaming PWA</title>
+    <title>Streaming PWA | Favoris</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="stylesheet" href="style.css" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,13 +25,16 @@
     <header class="flex justify-between items-center mb-12">
       <h1 class="text-center text-4xl font-semibold">Netflux</h1>
 
-      <a href="favoris.html">Favoris</a>
+      <a href="index.html">Accueil</a>
     </header>
 
-    <h2 class="text-2xl font-semibold mb-3">Films</h2>
-    <div id="popular-movies" class="flex gap-4 overflow-x-auto pb-2 mb-8"></div>
+    <h2 class="text-2xl font-semibold mb-3">Films favoris</h2>
+    <div
+      id="favorites-movies"
+      class="flex gap-4 overflow-x-auto pb-2 mb-8"
+    ></div>
 
-    <h2 class="text-2xl font-semibold mb-3">Séries</h2>
-    <div id="popular-series" class="flex gap-4 overflow-x-auto pb-2"></div>
+    <h2 class="text-2xl font-semibold mb-3">Séries favorites</h2>
+    <div id="favorites-series" class="flex gap-4 overflow-x-auto pb-2"></div>
   </body>
 </html>
